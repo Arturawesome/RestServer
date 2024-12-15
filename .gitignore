@@ -1,0 +1,51 @@
+# Общие системные файлы
+.DS_Store
+Thumbs.db
+
+# Файлы CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Директории сборки
+build/
+out/
+bin/
+obj/
+
+# Логи и временные файлы
+*.log
+*.tmp
+*.swp
+*.swo
+*.bak
+
+# Сгенерированные файлы
+*.o
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+*.out
+
+# Тестовые артефакты
+tests/*.exe
+tests/*.out
+tests/*.log
+
+# Установленные или скачанные зависимости
+_deps/
+external/
+*.tar.gz
+*.zip
+
+# IDE и редакторы
+.idea/
+.vscode/
+*.code-workspace
+*.iml
+
+# nlohmann/json, если библиотека скачивается локально
+/home/artur/Documents/RestServer/include/json/include/nlohmann/json.hpp

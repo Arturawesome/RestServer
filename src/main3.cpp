@@ -19,6 +19,10 @@ int main(){
     server.Get("/list", get_list_function);
     server.Get("/list2", get_list_function2);
 
+
+    //regular expression R"(/file/(.+))"
+    // file/ - it is litteraly file as path smt/smt/FILE
+    // (.+) cover ALL symbol after file/
     server.Get(R"(/file/(.+))", get_file_info);
 
     server.listen("0.0.0.0", 8080);
@@ -40,8 +44,10 @@ void get_file_info(const httplib::Request& req, httplib::Response& res){
     for(int i = 0; i < req.matches.size(); ++i){
         content += req.matches[i]; content += "\n";
     } res.set_content(content, "text/plain"); */
+    // req.matches object of std::smath whic have element with type std::sub_mathc.
+    // This elements can be chaged to str by .str()
 
-    auto file_name = req.matches[1];
+    auto file_name = req.matches[1].str();;
     auto file_path =std::filesystem::path(ROOT_DIR)/file_name;
 
     if(std::filesystem::exists(file_path) && std::filesystem::is_regular_file(file_path)){

@@ -9,4 +9,4 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 include_directories(${CMAKE_SOURCE_DIR}/include/cpp-httplib/src/cpp-httplib-0.18.3/)
 include_directories(${CMAKE_SOURCE_DIR}/include/json/include/)
-add_executable(cloudfs src/main3.cpp)
+add_executable(cloudfs src/main4.cpp)

@@ -50,3 +50,6 @@ external/
 
 # nlohmann/json, если библиотека скачивается локально
 /home/artur/Documents/RestServer/include/json/include/nlohmann/json.hpp
+
+# bin files
+a.out

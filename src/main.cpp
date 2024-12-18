@@ -2,32 +2,57 @@
 #include <filesystem> //std for work with files in system
 #include "httplib.h"
 #include <nlohmann/json.hpp>
-
-
+#include <thread>
+#include <vector>
+#include <deque>
 std::string ROOT_DIR;
 std::string SOURCE_DIR;
+std::deque<std::string> last_commands;
 
 void set_wrok_directory(int args, char* argv[]);
 void get_list_function(const httplib::Request& req, httplib::Response& res);
 void get_file_info(const httplib::Request& req, httplib::Response& res);
 void put_file_func(const httplib::Request& req, httplib::Response& res);
+void get_last_commands(const httplib::Request& req, httplib::Response& res);
+
+void add_command_to_deque(const std::string& command);
 
 int main(int args, char * argv[]){
 
     set_wrok_directory(args, argv);
 
     httplib::Server server;
+
+
     server.Get("/hello", [](const httplib::Request& req, httplib::Response& res) {
         res.set_content("Hello from FINUL main.cpp", "text/plain");
     });
 
     server.Get("/list", get_list_function);
     server.Get(R"(/file/(.+))", get_file_info);
+    server.Get("/last_commands", get_last_commands);
+
     server.Put(R"(/file/(.+))", put_file_func);
 
     if (!std::filesystem::exists(SOURCE_DIR)) {
         std::filesystem::create_directory(SOURCE_DIR);
     }
+
+
+    int num_threads = 4;
+    std::vector<std::thread> threads;
+
+    // for (int i = 0; i < num_threads; ++i) {
+    //     threads.push_back(std::thread(
+    //     [&server]() {
+    //         server.listen("0.0.0.0", 8080);
+    //     }));
+    // }
+    //
+    // // Ожидаем завершения работы всех потоков
+    // for (auto& th : threads) {
+    //     th.join();
+    // }
 
     server.listen("0.0.0.0", 8080);
     return 0;
@@ -36,6 +61,17 @@ int main(int args, char * argv[]){
 
 
 
+
+
+
+void add_command_to_deque(const std::string& command){
+    if(last_commands.size()>5){
+        last_commands.pop_back();
+        last_commands.push_front(command);
+    } else{
+        last_commands.push_front(command);
+    }
+}
 
 void set_wrok_directory(int args, char* argv[]){
 
@@ -51,6 +87,8 @@ void set_wrok_directory(int args, char* argv[]){
 void put_file_func(const httplib::Request& req, httplib::Response& res){
     std::string file_name = req.matches[1].str();
     std::string file_path = std::filesystem::path(SOURCE_DIR)/file_name;
+
+    add_command_to_deque("PUT " + file_path);
 
     // Проверка пути на принадлежность SOURCE_DIR
     auto canonical_path = std::filesystem::canonical(file_path);
@@ -76,6 +114,7 @@ void get_file_info(const httplib::Request& req, httplib::Response& res){
     std::string file_name = req.matches[1].str();
     std::string file_path = std::filesystem::path(SOURCE_DIR)/file_name;
     std::cout << "Requested file: " << file_path << std::endl;
+    add_command_to_deque("GET " + file_path);
 
     try{
         // Проверка пути на принадлежность SOURCE_DIR
@@ -129,6 +168,7 @@ void get_file_info(const httplib::Request& req, httplib::Response& res){
 
 void get_list_function(const httplib::Request& req, httplib::Response& res){
     std::string answer = "Files in data directory: \n";
+    add_command_to_deque("LIST " + SOURCE_DIR);
     if(std::filesystem::exists(SOURCE_DIR) && std::filesystem::is_directory(SOURCE_DIR)){
         res.set_content("Directory exists \n", "text/plain");
         for(auto f: std::filesystem::directory_iterator(SOURCE_DIR)){
@@ -144,6 +184,14 @@ void get_list_function(const httplib::Request& req, httplib::Response& res){
 
 
 
+// Получение списка последних команд
+void get_last_commands(const httplib::Request& req, httplib::Response& res){
+    // Формируем JSON из стека последних команд
+    nlohmann::json json;
+    json["commands"] = last_commands;
+
+    res.set_content(json.dump(), "application/json");
+}
 
 
 
